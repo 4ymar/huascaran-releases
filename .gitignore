@@ -1,0 +1,7 @@
+﻿node_modules/
+dist-electron/
+client/dist/
+server/data/inventario.db
+server/data/backups/
+*.log
+.env

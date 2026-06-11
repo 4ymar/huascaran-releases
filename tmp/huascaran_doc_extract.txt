@@ -1,0 +1,414 @@
+P0002 [] HUASCARAN
+P0003 [] Sistema de Gestión de Inventario y Punto de Venta
+P0005 [] DOCUMENTACIÓN TÉCNICA
+P0007 [] Versión 1.2.1
+P0008 [] Lima, Perú — 2025
+P0010 [] Confidencial — Uso interno y del cliente
+P0013 [Heading 1] 1. Resumen Ejecutivo
+P0014 [] HUASCARAN es una aplicación de escritorio para Windows que integra un sistema de Punto de Venta (POS) y gestión de inventario, diseñada para pequeñas y medianas empresas del mercado peruano. Permite administrar productos, ventas, compras, clientes, caja, créditos y facturación electrónica desde un único entorno, con soporte para acceso multi-dispositivo en red local.
+P0017 [Heading 1] 2. Arquitectura del Sistema
+P0018 [Heading 2] 2.1 Visión General
+P0019 [] El sistema adopta una arquitectura de tres capas ejecutadas dentro de un único proceso Electron en la máquina del cliente:
+P0021 [List Paragraph] Capa de presentación: React 18 + Vite 5 + Tailwind CSS, servida como archivos estáticos compilados.
+P0022 [List Paragraph] Capa de aplicación: API REST construida con Express 5, corriendo en el puerto 3020.
+P0023 [List Paragraph] Capa de datos: Base de datos SQLite gestionada con better-sqlite3.
+P0025 [] Electron actúa como contenedor del proceso Node.js (backend) y abre una ventana BrowserWindow apuntando a los archivos estáticos del cliente. En modo no-Electron (navegador directo), el sistema puede ser accedido desde otros dispositivos en la red local mediante la IP del servidor.
+P0027 [Heading 2] 2.2 Stack Tecnológico
+P0029 [Heading 2] 2.3 Diagrama de Capas
+P0031 [Heading 2] 2.4 Comunicación Frontend ↔ Backend
+P0032 [] Durante el desarrollo, Vite hace proxy de todas las llamadas /api/* al servidor Express en el puerto 3020, eliminando problemas de CORS. En producción (Electron), el frontend cargado como archivos estáticos se comunica directamente con el servidor embebido.
+P0034 [] Puerto de desarrollo frontend: 5200 (Vite)
+P0035 [] Puerto del servidor API: 3020 (Express)
+P0036 [] Proxy en desarrollo: /api/* → http://localhost:3020
+P0037 [] CORS: Habilitado para acceso desde red local (otros dispositivos)
+P0040 [Heading 1] 3. Módulos Funcionales
+P0041 [] El sistema está organizado en los siguientes módulos, cada uno con su propio router Express:
+P0045 [Heading 1] 4. API REST — Referencia de Endpoints
+P0046 [Heading 2] 4.1 Autenticación
+P0047 [] El sistema utiliza JSON Web Tokens (JWT) con firma HMAC-SHA256. El token se incluye en cada solicitud protegida como header HTTP:
+P0049 [] Authorization: Bearer <token>
+P0051 [] Los tokens tienen una vigencia de 12 horas. Al expirar, el frontend debe solicitar un nuevo token mediante re-login.
+P0054 [Heading 2] 4.2 Endpoints Públicos (sin autenticación)
+P0056 [Heading 2] 4.3 Catálogo Completo de Endpoints
+P0058 [] * La ruta /api/facturacion está excluida del middleware de licencia para garantizar que los comprobantes ya emitidos puedan consultarse incluso con licencia vencida.
+P0061 [Heading 1] 5. Modelo de Base de Datos
+P0062 [Heading 2] 5.1 Motor y características
+P0063 [List Paragraph] Motor: SQLite 3 mediante better-sqlite3 (operaciones síncronas).
+P0064 [List Paragraph] Ruta por defecto: server/data/inventario.db
+P0065 [List Paragraph] Configurable mediante variable de entorno DB_PATH.
+P0066 [List Paragraph] IDs de todos los registros: UUID v4 (texto), generados en servidor.
+P0067 [List Paragraph] Fechas almacenadas como texto ISO 8601 (timezone-safe).
+P0069 [Heading 2] 5.2 Tablas
+P0070 [Heading 3] clientes
+P0072 [Heading 3] productos
+P0074 [Heading 3] ventas
+P0076 [Heading 3] detalle_ventas
+P0078 [Heading 3] compras
+P0080 [Heading 3] detalle_compras
+P0082 [Heading 3] movimientos
+P0084 [Heading 3] config
+P0085 [] Esta tabla almacena todos los parámetros configurables del sistema: nombre de la empresa, RUC, dirección, porcentaje de IGV, series de comprobantes, credenciales Nubefact, entre otros.
+P0088 [Heading 1] 6. Seguridad
+P0089 [Heading 2] 6.1 Autenticación y Autorización
+P0090 [List Paragraph] Las contraseñas se almacenan con hash bcrypt (salt automático). Nunca se guardan en texto plano.
+P0091 [List Paragraph] La sesión se maneja mediante JWT firmados con HMAC-SHA256. El secreto es configurable por variable de entorno (JWT_SECRET).
+P0092 [List Paragraph] Los tokens expiran en 12 horas. No existe mecanismo de refresh token; el usuario debe volver a autenticarse.
+P0093 [List Paragraph] Todas las rutas /api/* (excepto las explícitamente públicas) están protegidas por el middleware requireAuth.
+P0095 [Heading 2] 6.2 Roles de Usuario
+P0097 [Heading 2] 6.3 Protección del Código
+P0098 [List Paragraph] El código del servidor se compila con bytenode a formato .jsc (bytecode de V8), impidiendo la lectura directa del código fuente en el entorno del cliente.
+P0099 [List Paragraph] El módulo de licencia (licencia.jsc) contiene la lógica de activación y no es legible ni modificable.
+P0101 [Heading 2] 6.4 Content Security Policy
+P0102 [] El servidor Express define una política CSP en cada respuesta HTTP, permitiendo únicamente:
+P0103 [List Paragraph] Scripts y estilos del propio dominio.
+P0104 [List Paragraph] Fuentes de Google Fonts (fonts.googleapis.com y fonts.gstatic.com).
+P0105 [List Paragraph] Conexiones externas exclusivamente hacia api.nubefact.com (facturación electrónica).
+P0108 [Heading 1] 7. Sistema de Licencias
+P0109 [] HUASCARAN implementa un control de activación por máquina. Cada instalación está ligada al hardware específico del equipo mediante un identificador de máquina (machine ID) único.
+P0111 [Heading 2] 7.1 Flujo de Activación
+P0112 [List Paragraph] El cliente instala el sistema. Al primer inicio, el sistema detecta que no existe licencia válida.
+P0113 [List Paragraph] El sistema muestra el código de máquina al cliente (visible también en /api/licencia/estado).
+P0114 [List Paragraph] El proveedor genera una clave de activación vinculada a ese código de máquina.
+P0115 [List Paragraph] El cliente ingresa la clave en la pantalla de activación (POST /api/licencia/activar).
+P0116 [List Paragraph] El sistema valida la clave y escribe el archivo de licencia local.
+P0117 [List Paragraph] El sistema queda desbloqueado hasta la fecha de expiración definida en la clave.
+P0119 [Heading 2] 7.2 Comportamiento con Licencia Vencida o Ausente
+P0120 [List Paragraph] Todas las rutas /api/* (excepto auth, licencia y heartbeat) devuelven HTTP 403 con el mensaje de bloqueo y el machine ID.
+P0121 [List Paragraph] La ruta /api/facturacion está exenta para preservar el acceso a comprobantes ya emitidos.
+P0122 [List Paragraph] El frontend detecta el estado bloqueado y muestra la pantalla de activación al usuario.
+P0125 [Heading 1] 8. Sistema de Backups
+P0126 [] El servidor implementa tres niveles de copia de seguridad automática de la base de datos SQLite, usando la API nativa de backup de better-sqlite3 (que garantiza consistencia transaccional):
+P0129 [] El nombre de cada archivo incluye timestamp completo: db_backup_YYYY-MM-DD_HH-MM-SS[_sufijo].db, permitiendo identificar el momento exacto de cada respaldo.
+P0132 [Heading 1] 9. Facturación Electrónica
+P0133 [] El módulo de facturación está integrado con Nubefact, un OSE (Operador de Servicios Electrónicos) autorizado por SUNAT para la emisión de comprobantes electrónicos en el Perú.
+P0135 [Heading 2] 9.1 Comprobantes soportados
+P0136 [List Paragraph] Boleta de Venta Electrónica
+P0137 [List Paragraph] Factura Electrónica (requiere RUC del cliente)
+P0138 [List Paragraph] Nota de Crédito (anulación o ajuste de comprobantes)
+P0140 [Heading 2] 9.2 Integración técnica
+P0141 [List Paragraph] La comunicación con Nubefact se realiza mediante su API REST (JSON V1).
+P0142 [List Paragraph] Las credenciales (token Nubefact, RUC emisor, series) se configuran en la tabla config.
+P0143 [List Paragraph] La ruta /api/facturacion es pública respecto al middleware de licencia para garantizar disponibilidad.
+P0144 [List Paragraph] El frontend genera el PDF del comprobante usando html2canvas para su impresión o envío.
+P0147 [Heading 1] 10. Instalación y Despliegue
+P0148 [Heading 2] 10.1 Requisitos del sistema (cliente)
+P0150 [Heading 2] 10.2 Instalación desde instalador
+P0151 [List Paragraph] Ejecutar HUASCARAN-Setup.exe como administrador.
+P0152 [List Paragraph] Seleccionar directorio de instalación (por defecto: C:\Program Files\Huascaran).
+P0153 [List Paragraph] El instalador crea acceso directo en escritorio y menú de inicio.
+P0154 [List Paragraph] Al primer inicio, ingresar la clave de activación provista por el proveedor.
+P0155 [List Paragraph] Configurar los datos de la empresa en el módulo de Configuración.
+P0157 [Heading 2] 10.3 Estructura de datos en producción
+P0158 [] %APPDATA%\Huascaran\data\inventario.db     ← Base de datos
+P0159 [] %APPDATA%\Huascaran\data\backups\          ← Copias de seguridad
+P0160 [] %APPDATA%\Huascaran\app-error.log           ← Log de errores
+P0162 [Heading 2] 10.4 Acceso desde otros dispositivos (red local)
+P0163 [] El servidor expone su API en 0.0.0.0:3020, permitiendo acceso desde otros equipos en la misma red. El endpoint GET /api/server-info devuelve la IP local y el puerto para configurar el acceso desde navegadores o tablets.
+P0165 [] En modo navegador (sin Electron), el sistema implementa un mecanismo de heartbeat: el frontend envía una señal cada cierto tiempo; si el navegador se cierra, el proceso del servidor se auto-apaga tras 5 minutos de inactividad.
+P0168 [Heading 1] 11. Guía de Desarrollo Local
+P0169 [Heading 2] 11.1 Prerrequisitos
+P0170 [List Paragraph] Node.js 18 o superior
+P0171 [List Paragraph] npm 9 o superior
+P0172 [List Paragraph] Windows (requerido para compilar better-sqlite3 con los binarios nativos de Electron)
+P0174 [Heading 2] 11.2 Instalación del entorno
+P0175 [] # Clonar el repositorio
+P0176 [] git clone <repositorio> && cd huascaran
+P0178 [] # Instalar dependencias raíz
+P0179 [] npm install
+P0181 [] # Instalar dependencias del servidor
+P0182 [] cd server && npm install && cd ..
+P0184 [] # Instalar dependencias del cliente
+P0185 [] cd client && npm install && cd ..
+P0187 [Heading 2] 11.3 Comandos disponibles
+P0189 [Heading 2] 11.4 Variables de entorno
+P0192 [Heading 1] 12. Empaquetado y Distribución
+P0193 [Heading 2] 12.1 Proceso de build completo
+P0194 [List Paragraph] Compilar el frontend React: npm run build:frontend → genera client/dist/
+P0195 [List Paragraph] Reconstruir binarios nativos para Electron: npm run rebuild:native
+P0196 [List Paragraph] Compilar el servidor con bytenode: npm run compile:backend → genera .jsc
+P0197 [List Paragraph] Empaquetar con electron-builder: npx electron-builder --win → genera dist-electron/
+P0199 [Heading 2] 12.2 Estructura del instalador
+P0200 [] El instalador NSIS generado configura:
+P0201 [List Paragraph] Nombre del producto: HUASCARAN
+P0202 [List Paragraph] Idioma del instalador: Español (código 3082)
+P0203 [List Paragraph] Permite elegir el directorio de instalación.
+P0204 [List Paragraph] Crea acceso directo en escritorio con el nombre "Huascaran".
+P0205 [List Paragraph] La base de datos (inventario.db) queda excluida del instalador para no sobreescribir datos en actualizaciones.
+P0207 [Heading 2] 12.3 Archivos excluidos del instalador
+P0208 [List Paragraph] server/data/inventario.db — se preserva en actualizaciones
+P0209 [List Paragraph] server/data/backups/ — se preserva en actualizaciones
+P0210 [List Paragraph] server/licencia.js — se excluye para distribuir solo la versión compilada (.jsc)
+P0213 [Heading 1] 13. Control de Errores y Logging
+P0214 [Heading 2] 13.1 Logging de errores
+P0215 [List Paragraph] El servidor captura todas las excepciones no controladas (uncaughtException) y las escribe en app-error.log con timestamp ISO 8601.
+P0216 [List Paragraph] console.error está interceptado para que todos los errores también queden en el log de archivo.
+P0217 [List Paragraph] El archivo de log se ubica junto a la base de datos (configurable con DB_PATH).
+P0219 [Heading 2] 13.2 Middleware de errores
+P0220 [] Express cuenta con un middleware centralizado de manejo de errores (errorHandler) registrado al final de la cadena de middlewares, que captura cualquier error no tratado en los routers y devuelve una respuesta JSON estructurada al cliente.
+P0222 [Heading 2] 13.3 asyncHandler
+P0223 [] Los controladores de rutas utilizan un wrapper asyncHandler que captura errores de funciones async y los pasa al middleware de errores, evitando try-catch repetitivos en cada endpoint.
+P0226 [Heading 1] 14. Glosario
+
+[TABLE 1]
+R1: Atributo || Valor
+R2: Nombre del producto || HUASCARAN
+R3: Versión actual || 1.2.1
+R4: Tipo de aplicación || Escritorio (Windows) + acceso web local
+R5: Mercado objetivo || Empresas peruanas (régimen tributario peruano)
+R6: Facturación electrónica || Integración con Nubefact (SUNAT)
+R7: Distribución || Instalador NSIS (.exe) para Windows
+R8: Modelo de licencia || Por máquina, activación con clave
+
+[TABLE 2]
+R1: Capa || Tecnología || Versión || Rol
+R2: Contenedor || Electron || 29.x || App de escritorio Windows
+R3: Frontend || React || 18.x || Interfaz de usuario SPA
+R4: Build frontend || Vite || 5.x || Bundler y servidor de desarrollo
+R5: Estilos || Tailwind CSS || 4.x || Sistema de diseño utility-first
+R6: Backend || Express || 5.x || Framework API REST
+R7: Base de datos || SQLite || — || Almacenamiento local embebido
+R8: ORM/Driver || better-sqlite3 || 12.x || Driver sincrónico SQLite
+R9: Autenticación || JSON Web Token || 9.x || Tokens de sesión
+R10: Cifrado || bcryptjs || 3.x || Hash de contraseñas
+R11: Protección || bytenode || 1.x || Compilación de código servidor
+R12: Instalador || electron-builder || 24.x || Empaquetado NSIS Windows
+R13: Exportación || ExcelJS || — || Generación de reportes .xlsx
+R14: PDF || html2canvas || — || Captura de comprobantes
+
+[TABLE 3]
+R1: Nivel || Componente || Tecnología || Puerto/Ruta
+R2: UI || React SPA || React + Tailwind || Archivos estáticos / :5200 (dev)
+R3: API || Express REST Server || Node.js + Express 5 || :3020
+R4: Auth || Middleware JWT || jsonwebtoken || Headers Authorization
+R5: DB || Base de datos local || SQLite + better-sqlite3 || data/inventario.db
+R6: Backup || Sistema de copias automáticas || Node.js fs || data/backups/
+R7: Licencia || Control de activación || bytenode (.jsc) || licencia.jsc
+
+[TABLE 4]
+R1: Módulo || Ruta Base || Descripción
+R2: Autenticación || /api/auth || Login, logout, validación de sesión JWT
+R3: Usuarios || /api/usuarios || CRUD de usuarios y gestión de roles
+R4: Productos || /api/productos || Catálogo, precios, stock y categorías
+R5: Ventas || /api/ventas || Registro de ventas, comprobantes y anulaciones
+R6: Compras || /api/compras || Órdenes de compra y recepción de mercadería
+R7: Clientes || /api/clientes || Directorio de clientes, tipo doc. (DNI/RUC)
+R8: Movimientos || /api/movimientos || Trazabilidad de entradas y salidas de stock
+R9: Caja || /api/caja || Apertura, cierre y control de sesión de caja
+R10: Créditos || /api/creditos || Ventas al crédito y cuentas por cobrar
+R11: Facturación || /api/facturacion || Emisión electrónica vía Nubefact (SUNAT)
+R12: Reportes || /api/reportes || Informes de ventas, stock, utilidades
+R13: Configuración || /api/config || Parámetros del sistema (empresa, IGV, etc.)
+R14: Backups || /api/backups || Gestión de copias de seguridad manuales
+R15: Logs || /api/logs || Auditoría y registro de eventos
+R16: Archivos || /api/archivos || Carga y gestión de imágenes de productos
+R17: Sistema || /api/sistema || Info del servidor, salud, reinicio
+
+[TABLE 5]
+R1: Campo del Token || Descripción
+R2: id_usuario || Identificador único del usuario
+R3: username || Nombre de usuario del sistema
+R4: nombre || Nombre completo del usuario
+R5: rol || Rol asignado: ADMIN o VENDEDOR
+
+[TABLE 6]
+R1: Método || Endpoint || Descripción
+R2: POST || /api/auth/login || Iniciar sesión, devuelve JWT
+R3: GET || /api/health || Estado del servidor y base de datos
+R4: GET || /api/server-info || IP y puerto para acceso desde red local
+R5: GET || /api/estadisticas || Totales básicos (productos, ventas)
+R6: GET || /api/licencia/estado || Estado y vigencia de la licencia
+R7: POST || /api/licencia/activar || Activar licencia con clave provista
+R8: POST || /api/heartbeat || Mantener vivo el proceso en modo navegador
+
+[TABLE 7]
+R1: Método || Endpoint || Acceso || Descripción
+R2: POST || /api/auth/login || Pública || Autenticar usuario, devuelve JWT
+R3: GET || /api/auth/me || JWT || Datos del usuario autenticado
+R4: GET || /api/productos || JWT || Listar productos con stock
+R5: POST || /api/productos || JWT || Crear producto
+R6: PUT || /api/productos/:id || JWT || Actualizar producto
+R7: DELETE || /api/productos/:id || JWT || Dar de baja producto
+R8: GET || /api/ventas || JWT || Listar ventas
+R9: POST || /api/ventas || JWT || Registrar nueva venta
+R10: PUT || /api/ventas/:id/anular || JWT || Anular venta
+R11: GET || /api/compras || JWT || Listar órdenes de compra
+R12: POST || /api/compras || JWT || Registrar compra
+R13: GET || /api/clientes || JWT || Listar clientes
+R14: POST || /api/clientes || JWT || Crear cliente
+R15: GET || /api/movimientos || JWT || Historial de movimientos de stock
+R16: GET || /api/reportes || JWT || Reportes y estadísticas
+R17: GET || /api/caja || JWT || Estado y operaciones de caja
+R18: POST || /api/caja/abrir || JWT || Abrir sesión de caja
+R19: POST || /api/caja/cerrar || JWT || Cerrar sesión de caja
+R20: GET || /api/creditos || JWT || Listar créditos/cuentas por cobrar
+R21: GET || /api/usuarios || JWT+Admin || Gestión de usuarios del sistema
+R22: POST || /api/facturacion || Pública* || Emisión de comprobantes electrónicos
+R23: GET || /api/config || JWT || Configuración del sistema
+R24: POST || /api/backups || JWT || Generar backup manual
+R25: GET || /api/logs || JWT || Consulta de logs del sistema
+R26: GET || /api/health || Pública || Estado del servidor
+R27: GET || /api/licencia/estado || Pública || Estado de la licencia
+R28: POST || /api/licencia/activar || Pública || Activar licencia con clave
+
+[TABLE 8]
+R1: Campo || Tipo || Descripción
+R2: id_cliente || TEXT PK || UUID v4 — identificador único del cliente
+R3: tipo_cliente || TEXT || Tipo: PERSONA, EMPRESA u otros
+R4: nombre_razon_social || TEXT || Nombre completo o razón social
+R5: tipo_documento || TEXT || DNI, RUC, CE, Pasaporte, etc.
+R6: numero_documento || TEXT || Número de documento de identidad
+R7: direccion || TEXT || Dirección fiscal o de contacto
+R8: telefono || TEXT || Teléfono de contacto
+R9: email || TEXT || Correo electrónico
+R10: estado || INT(1) || 1 = activo, 0 = inactivo
+R11: fecha_registro || TEXT || Fecha/hora de creación (ISO 8601)
+
+[TABLE 9]
+R1: Campo || Tipo || Descripción
+R2: id_producto || TEXT PK || UUID v4 — identificador único del producto
+R3: sku || TEXT || Código de producto (único, requerido)
+R4: nombre || TEXT || Nombre o descripción del producto
+R5: categoria || TEXT || Categoría del producto
+R6: unidad_medida || TEXT || UND, KG, L, CAJA, etc.
+R7: precio_compra || REAL || Costo de adquisición (sin IGV)
+R8: precio_venta || REAL || Precio de venta al público
+R9: stock_actual || REAL || Cantidad disponible en almacén
+R10: stock_minimo || REAL || Nivel mínimo para alertas de reposición
+R11: descripcion || TEXT || Descripción extendida del producto
+R12: imagen_url || TEXT || Ruta relativa a imagen del producto
+R13: estado || INT(1) || 1 = activo, 0 = inactivo
+R14: fecha_creacion || TEXT || Fecha de alta en sistema (ISO 8601)
+R15: fecha_actualizacion || TEXT || Última modificación (ISO 8601)
+
+[TABLE 10]
+R1: Campo || Tipo || Descripción
+R2: id_venta || TEXT PK || UUID v4 — identificador único de la venta
+R3: numero_venta || TEXT || Número correlativo de venta (único)
+R4: fecha_hora || TEXT || Fecha y hora de la venta (ISO 8601)
+R5: id_cliente || TEXT FK || Referencia a clientes.id_cliente
+R6: tipo_comprobante || TEXT || BOLETA, FACTURA, TICKET u otros
+R7: numero_comprobante || TEXT || Número del comprobante electrónico
+R8: subtotal || REAL || Monto antes de IGV y descuentos
+R9: igv || REAL || IGV calculado (18% en Perú)
+R10: descuento || REAL || Descuento global aplicado
+R11: total || REAL || Monto total a cobrar
+R12: forma_pago || TEXT || EFECTIVO, TARJETA, TRANSFERENCIA, CREDITO
+R13: estado || TEXT || ACTIVA o ANULADA
+R14: usuario || TEXT || Username del cajero que registró la venta
+R15: notas || TEXT || Observaciones adicionales
+
+[TABLE 11]
+R1: Campo || Tipo || Descripción
+R2: id_detalle || TEXT PK || UUID v4
+R3: id_venta || TEXT FK || Referencia a ventas.id_venta
+R4: id_producto || TEXT FK || Referencia a productos.id_producto
+R5: nombre_producto || TEXT || Nombre del producto al momento de la venta (snapshot)
+R6: cantidad || REAL || Unidades vendidas
+R7: precio_unitario || REAL || Precio unitario al momento de la venta
+R8: descuento_linea || REAL || Descuento aplicado en este ítem
+R9: subtotal_linea || REAL || Subtotal del ítem ((precio - descuento) × cantidad)
+
+[TABLE 12]
+R1: Campo || Tipo || Descripción
+R2: id_compra || TEXT PK || UUID v4
+R3: numero_oc || TEXT || Número de orden de compra (único)
+R4: fecha_hora || TEXT || Fecha/hora de la compra (ISO 8601)
+R5: proveedor || TEXT || Nombre o razón social del proveedor
+R6: ruc_proveedor || TEXT || RUC del proveedor
+R7: doc_proveedor || TEXT || Número de documento/factura del proveedor
+R8: subtotal || REAL || Monto antes de IGV
+R9: igv || REAL || IGV de la compra
+R10: total || REAL || Total pagado al proveedor
+R11: estado || TEXT || ACTIVA o ANULADA
+R12: usuario || TEXT || Username que registró la compra
+R13: notas || TEXT || Observaciones adicionales
+
+[TABLE 13]
+R1: Campo || Tipo || Descripción
+R2: id_detalle || TEXT PK || UUID v4
+R3: id_compra || TEXT FK || Referencia a compras.id_compra
+R4: id_producto || TEXT FK || Referencia a productos.id_producto
+R5: nombre_producto || TEXT || Nombre del producto (snapshot)
+R6: cantidad || REAL || Cantidad recibida
+R7: precio_unitario || REAL || Costo unitario de compra
+R8: subtotal_linea || REAL || Subtotal del ítem
+
+[TABLE 14]
+R1: Campo || Tipo || Descripción
+R2: id_movimiento || TEXT PK || UUID v4
+R3: fecha_hora || TEXT || Fecha/hora del movimiento (ISO 8601)
+R4: id_producto || TEXT FK || Producto afectado
+R5: nombre_producto || TEXT || Nombre del producto (snapshot)
+R6: tipo_movimiento || TEXT || ENTRADA, SALIDA, AJUSTE, VENTA, COMPRA
+R7: cantidad || REAL || Cantidad del movimiento
+R8: stock_anterior || REAL || Stock antes del movimiento
+R9: stock_nuevo || REAL || Stock resultante tras el movimiento
+R10: referencia || TEXT || Número de venta/compra relacionado
+R11: motivo || TEXT || Razón del ajuste o movimiento manual
+R12: usuario || TEXT || Usuario que generó el movimiento
+
+[TABLE 15]
+R1: Campo || Tipo || Descripción
+R2: clave || TEXT PK || Nombre del parámetro de configuración
+R3: valor || TEXT || Valor del parámetro (siempre texto)
+
+[TABLE 16]
+R1: Rol || Permisos || Acceso a usuarios
+R2: ADMIN || Acceso total al sistema, incluyendo configuración, backups y gestión de usuarios || Sí
+R3: VENDEDOR || Acceso a ventas, productos, clientes y caja. Sin acceso a configuración avanzada ni usuarios || No
+
+[TABLE 17]
+R1: Tipo || Frecuencia || Retención || Carpeta
+R2: Inicial || Al arrancar (5s tras inicio) || Sin límite definido || data/backups/automaticos/
+R3: Automático || Cada 30 minutos || Últimos 48 archivos (24h) || data/backups/automaticos/
+R4: Diario || 1 por día (si no existe) || Últimos 30 días || data/backups/diarios/
+R5: Manual || A petición del usuario || Sin límite definido || data/backups/manuales/
+
+[TABLE 18]
+R1: Componente || Mínimo
+R2: Sistema operativo || Windows 10 / Windows 11 (64 bits)
+R3: RAM || 4 GB (8 GB recomendado)
+R4: Disco || 500 MB libres para instalación + espacio para datos y backups
+R5: Red || Opcional: red local para acceso multi-dispositivo
+
+[TABLE 19]
+R1: Comando npm || Descripción
+R2: npm run dev || Inicia backend (puerto 3020) y frontend (puerto 5200) concurrentemente
+R3: npm run dev:backend || Solo el servidor Express (Node.js)
+R4: npm run dev:frontend || Solo Vite (React, con proxy a :3020)
+R5: npm run build:frontend || Compila el frontend para producción en client/dist/
+R6: npm run compile:backend || Compila el servidor con bytenode (.jsc)
+R7: npm run rebuild:dev || Reconstruye better-sqlite3 para Node.js en desarrollo
+R8: npm run rebuild:native || Reconstruye better-sqlite3 para Electron
+R9: npm run electron:build || Build completo: frontend + nativo + servidor + instalador NSIS
+R10: npm start || Lanza la app Electron (requiere build previo)
+
+[TABLE 20]
+R1: Variable || Valor por defecto || Descripción
+R2: PORT || 3020 || Puerto del servidor Express
+R3: DB_PATH || server/data/inventario.db || Ruta absoluta a la base de datos SQLite
+R4: BACKUP_DIR || server/data/backups || Directorio raíz de backups
+R5: JWT_SECRET || huascaran-super-secret-key-2024 || Secreto de firma JWT (cambiar en producción)
+R6: IS_ELECTRON || false || true cuando se ejecuta dentro de Electron
+R7: CLIENT_DIST || ../client/dist || Ruta a los archivos estáticos del frontend
+
+[TABLE 21]
+R1: Término || Definición
+R2: API REST || Interfaz de programación de aplicaciones basada en HTTP con recursos y verbos estándar (GET, POST, PUT, DELETE)
+R3: better-sqlite3 || Driver sincrónico de Node.js para SQLite, que no requiere callbacks ni promesas
+R4: bytenode || Herramienta que compila JavaScript a bytecode de V8, ofuscando el código fuente
+R5: CSP || Content Security Policy — política que limita las fuentes de recursos que el navegador puede cargar
+R6: Electron || Framework para crear apps de escritorio con tecnologías web (Chromium + Node.js)
+R7: IGV || Impuesto General a las Ventas (equivalente al IVA). Tasa vigente en Perú: 18%
+R8: JWT || JSON Web Token — estándar para transmitir información de autenticación entre cliente y servidor de forma segura
+R9: NSIS || Nullsoft Scriptable Install System — sistema de creación de instaladores para Windows
+R10: Nubefact || Operador de Servicios Electrónicos (OSE) autorizado por SUNAT para emisión de comprobantes electrónicos
+R11: OC || Orden de Compra — documento que formaliza la adquisición de productos a un proveedor
+R12: OSE || Operador de Servicios Electrónicos — empresa autorizada por SUNAT para procesar comprobantes electrónicos
+R13: POS || Point of Sale (Punto de Venta) — sistema para registrar ventas al cliente final
+R14: RUC || Registro Único de Contribuyentes — número de identificación tributaria peruano (11 dígitos)
+R15: SKU || Stock Keeping Unit — código único de identificación de producto en inventario
+R16: SQLite || Motor de base de datos relacional embebido, sin servidor separado, que almacena todo en un único archivo
+R17: SUNAT || Superintendencia Nacional de Aduanas y de Administración Tributaria — entidad tributaria del Perú
+R18: UUID || Universally Unique Identifier — identificador aleatorio de 128 bits, virtualmente único
+R19: Vite || Herramienta de build moderna para frontends JavaScript, con servidor de desarrollo ultra-rápido
