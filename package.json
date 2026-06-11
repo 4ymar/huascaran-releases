@@ -13,7 +13,8 @@
     "build:frontend": "cd client && npm run build",
     "start": "electron .",
     "compile:backend": "node server/compile_server.js",
-    "electron:build": "npm run build:frontend && npm run rebuild:native && npm run compile:backend && npx electron-builder --win"
+    "electron:build": "npm run build:frontend && npm run rebuild:native && npm run compile:backend && npx electron-builder --win",
+    "release": "npm run build:frontend && npm run rebuild:native && npm run compile:backend && npx electron-builder --win --publish always"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
@@ -35,7 +36,7 @@
     "productName": "HUASCARAN",
     "publish": {
       "provider": "github",
-      "owner": "TU_USUARIO_GITHUB",
+      "owner": "4ymar",
       "repo": "huascaran-releases",
       "private": false
     },

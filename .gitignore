@@ -5,3 +5,9 @@ server/data/inventario.db
 server/data/backups/
 *.log
 .env
+descargas/
+server/data/secrets.json
+server/data/licencia.dat
+server/data/licencia.dat.bak
+server/data/license-clock.json
+server/data/db.json

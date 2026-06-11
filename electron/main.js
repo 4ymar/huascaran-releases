@@ -366,6 +366,15 @@ app.whenReady().then(() => {
     log('Esperando que el servidor esté listo...');
     esperarServidor();
 
+    // Verificar actualizaciones solo en producción
+    if (app.isPackaged) {
+        setTimeout(() => {
+            autoUpdater.checkForUpdates().catch(err => {
+                log('Error al verificar actualizaciones: ' + err.message);
+            });
+        }, 8000); // esperar 8s a que la app esté lista
+    }
+
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
