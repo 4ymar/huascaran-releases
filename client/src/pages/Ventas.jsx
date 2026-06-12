@@ -78,6 +78,7 @@ export default function Ventas() {
     const [medioPagoAdelanto, setMedioPagoAdelanto] = useState('EFECTIVO');
     const [fechaVencimiento, setFechaVencimiento] = useState('');
     const [notasCredito, setNotasCredito] = useState('');
+    const [categoriasDB, setCategoriasDB] = useState([]);
 
     const refreshProductos = () => getProductos({ estado: 'true' }).then(setProductos);
 
@@ -88,6 +89,10 @@ export default function Ventas() {
             setConfigApp(cfg);
             setSunatActivo(cfg?.sunat_activo === '1');
         });
+        fetch('/api/categorias', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+            .then(r => r.json())
+            .then(data => setCategoriasDB(Array.isArray(data) ? data : []))
+            .catch(() => {});
     }, []);
 
     const tasaIGV = parseFloat(configApp.igv || 18);
@@ -330,7 +335,7 @@ export default function Ventas() {
                                 {categorias.map(cat => (
                                     <button key={cat} onClick={() => setFilterCat(cat === filterCat ? '' : cat)}
                                         style={{ padding: '5px 12px', borderRadius: 20, border: '1.5px solid', whiteSpace: 'nowrap', cursor: 'pointer', fontSize: 11, fontWeight: 600, flexShrink: 0, transition: 'all 0.15s', borderColor: filterCat === cat ? '#735DFF' : '#e2e8f0', background: filterCat === cat ? 'rgba(115,93,255,0.08)' : 'white', color: filterCat === cat ? '#735DFF' : '#64748b' }}>
-                                        {cat}
+                                        {categoriasDB.find(c => c.nombre === cat)?.icono || '📦'} {cat}
                                     </button>
                                 ))}
                             </div>
@@ -352,7 +357,7 @@ export default function Ventas() {
                                                 <div style={{ position: 'absolute', top: 8, right: 8, width: 20, height: 20, borderRadius: '50%', background: '#735DFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: 'white' }}>{inCart.cantidad}</div>
                                             )}
                                             <p style={{ fontSize: 10, fontWeight: 700, color: '#735DFF', fontFamily: 'monospace', margin: '0 0 4px' }}>{p.sku}</p>
-                                            {p.categoria && <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: '#f1f5f9', color: '#64748b', marginBottom: 4, display: 'inline-block' }}>{p.categoria}</span>}
+                                            {p.categoria && <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: '#f1f5f9', color: '#64748b', marginBottom: 4, display: 'inline-block' }}>{categoriasDB.find(c => c.nombre === p.categoria)?.icono || '📦'} {p.categoria}</span>}
                                             <p style={{ fontSize: 12, fontWeight: 600, color: '#1D1136', margin: '4px 0 8px', lineHeight: 1.3, minHeight: '2.4em' }}>{p.nombre}</p>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <p style={{ fontSize: 15, fontWeight: 800, color: '#1D1136', margin: 0 }}>{formatCurrency(p.precio_venta)}</p>

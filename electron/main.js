@@ -235,7 +235,7 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:3020');
 
     // Temporal para diagnóstico — quitar en versión final
-    //mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.maximize();

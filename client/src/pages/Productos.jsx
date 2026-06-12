@@ -5,7 +5,7 @@ import { useToast } from '../components/Toast';
 import { Plus, Search, Download, Edit2, X, Filter, ChevronLeft, ChevronRight, Package, TrendingUp, Upload, FileSpreadsheet, AlertTriangle, CheckCircle } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 25;
-const CATEGORIAS = ['Herramientas', 'Materiales de Construccion', 'Electricidad', 'Plomeria', 'Pintura', 'Ferreteria General', 'Seguridad', 'Jardineria'];
+
 const UNIDADES = ['unidad', 'kg', 'metro', 'litro', 'galon', 'rollo', 'bolsa', 'caja', 'par', 'juego', 'millar', 'm3', 'varilla'];
 
 const emptyProduct = {
@@ -13,11 +13,6 @@ const emptyProduct = {
     precio_compra: '', precio_venta: '', stock_actual: '', stock_minimo: '', imagen_url: ''
 };
 
-const CAT_ICONS = {
-    'Herramientas': '🔧', 'Materiales de Construccion': '🧱', 'Electricidad': '⚡',
-    'Plomeria': '🚿', 'Pintura': '🎨', 'Ferreteria General': '⚙️',
-    'Seguridad': '🔒', 'Jardineria': '🌱'
-};
 
 export default function Productos() {
     const toast = useToast();
@@ -36,6 +31,7 @@ export default function Productos() {
     const [importData, setImportData] = useState([]);
     const [importProcessing, setImportProcessing] = useState(false);
     const [showDataMenu, setShowDataMenu] = useState(false);
+    const [categoriasDB, setCategoriasDB] = useState([]);
     const dataMenuRef = useRef(null);
 
     useEffect(() => {
@@ -56,8 +52,15 @@ export default function Productos() {
         if (filterStock) params.stock_level = filterStock;
         getProductos(params).then(setProductos).finally(() => setLoading(false));
     };
+    const loadCategorias = () => {
+        fetch('/api/categorias', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+            .then(r => r.json())
+            .then(data => setCategoriasDB(Array.isArray(data) ? data.filter(c => c.activo) : []))
+            .catch(() => {});
+    };
 
     useEffect(() => { loadData(); }, [search, filterCat, filterStock]);
+    useEffect(() => { loadData(); loadCategorias(); }, []);
 
     const totalPages = Math.ceil(productos.length / ITEMS_PER_PAGE);
     const paginatedProducts = productos.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
@@ -374,7 +377,11 @@ export default function Productos() {
                             <label className="form-label">Categoria</label>
                             <select className="form-select" value={filterCat} onChange={e => { setFilterCat(e.target.value); setPage(1); }}>
                                 <option value="">Todas las categorias</option>
-                                {CATEGORIAS.map(c => <option key={c}>{c}</option>)}
+                                {categoriasDB.map(c => (
+                                    <option key={c.id_categoria} value={c.nombre}>
+                                        {c.icono} {c.nombre}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div>
@@ -428,7 +435,7 @@ export default function Productos() {
                                                     <p style={{ fontSize: 13, fontWeight: 600, color: '#1e293b', margin: 0 }}>{p.nombre}</p>
                                                     {p.descripcion && <p style={{ fontSize: 11, color: '#94a3b8', margin: '2px 0 0' }}>{p.descripcion.substring(0, 40)}{p.descripcion.length > 40 ? '...' : ''}</p>}
                                                 </td>
-                                                <td><span style={{ fontSize: 12, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 8px', color: '#475569', fontWeight: 500 }}>{CAT_ICONS[p.categoria] || '📦'} {p.categoria}</span></td>
+                                                <td><span style={{ fontSize: 12, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 8px', color: '#475569', fontWeight: 500 }}>{(categoriasDB.find(c => c.nombre === p.categoria)?.icono) || '📦'} {p.categoria}</span></td>
                                                 <td style={{ textAlign: 'right', fontSize: 13, color: '#64748b' }}>{formatCurrency(p.precio_compra)}</td>
                                                 <td style={{ textAlign: 'right', fontSize: 14, fontWeight: 700, color: '#1e293b' }}>{formatCurrency(p.precio_venta)}</td>
                                                 <td style={{ textAlign: 'right' }}>
@@ -621,7 +628,11 @@ export default function Productos() {
                                     <label className="form-label">Categoria *</label>
                                     <select className="form-select" required value={form.categoria} onChange={e => setForm({ ...form, categoria: e.target.value })}>
                                         <option value="">Seleccionar categoria...</option>
-                                        {CATEGORIAS.map(c => <option key={c}>{c}</option>)}
+                                        {categoriasDB.map(c => (
+                                            <option key={c.id_categoria} value={c.nombre}>
+                                                {c.icono} {c.nombre}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div>

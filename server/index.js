@@ -327,6 +327,7 @@ app.use('/api/creditos', require('./routes/creditos'));
 app.use('/api/caja', require('./routes/caja'));
 app.use('/api/logs',    require('./routes/logs'));
 app.use('/api/backups', require('./routes/backups'));
+app.use('/api/categorias', require('./routes/categorias'));
 
 
 // ── Archivos estáticos del frontend ───────────────────────

@@ -313,6 +313,14 @@ function inicializarBaseDeDatos() {
         BEGIN
             SELECT RAISE(ABORT, 'Stock insuficiente o negativo');
         END;
+
+        CREATE TABLE IF NOT EXISTS categorias (
+            id_categoria   INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre         TEXT NOT NULL UNIQUE,
+            icono          TEXT NOT NULL DEFAULT '📦',
+            activo         INTEGER NOT NULL DEFAULT 1,
+            orden          INTEGER NOT NULL DEFAULT 0
+        );
     `);
 
     // ── Poblar config base si la tabla quedó vacía (instalación nueva) ────────
@@ -349,6 +357,40 @@ function inicializarBaseDeDatos() {
             for (const [clave, valor] of defaults) {
                 configInicial.run({ clave, valor });
             }
+        // ── Poblar categorías base si la tabla quedó vacía ────────────────────────
+    const { cc } = db.prepare('SELECT COUNT(*) AS cc FROM categorias').get();
+    if (cc === 0) {
+        const insertCat = db.prepare(
+            `INSERT INTO categorias (nombre, icono, orden) VALUES (@nombre, @icono, @orden)`
+        );
+        const poblarCats = db.transaction(() => {
+            const defaults = [
+                { nombre: 'General',            icono: '📦', orden: 0  },
+                { nombre: 'Herramientas',        icono: '🔧', orden: 1  },
+                { nombre: 'Construcción',        icono: '🧱', orden: 2  },
+                { nombre: 'Electricidad',        icono: '⚡', orden: 3  },
+                { nombre: 'Plomería',            icono: '🚿', orden: 4  },
+                { nombre: 'Pintura',             icono: '🎨', orden: 5  },
+                { nombre: 'Alimentos',           icono: '🍎', orden: 6  },
+                { nombre: 'Bebidas',             icono: '🥤', orden: 7  },
+                { nombre: 'Limpieza e Higiene',  icono: '🧴', orden: 8  },
+                { nombre: 'Ropa y Calzado',      icono: '👕', orden: 9  },
+                { nombre: 'Farmacia',            icono: '💊', orden: 10 },
+                { nombre: 'Tecnología',          icono: '📱', orden: 11 },
+                { nombre: 'Muebles y Hogar',     icono: '🪑', orden: 12 },
+                { nombre: 'Jardinería',          icono: '🌱', orden: 13 },
+                { nombre: 'Mascotas',            icono: '🐾', orden: 14 },
+                { nombre: 'Útiles y Papelería',  icono: '📚', orden: 15 },
+                { nombre: 'Restaurante',         icono: '🍽️', orden: 16 },
+                { nombre: 'Salud y Belleza',     icono: '💈', orden: 17 },
+                { nombre: 'Seguridad',           icono: '🔒', orden: 18 },
+                { nombre: 'Destacados',          icono: '⭐', orden: 19 },
+            ];
+            for (const cat of defaults) insertCat.run(cat);
+        });
+        poblarCats();
+        console.log('[DB] Categorías por defecto creadas.');
+    }
         });
         poblar();
         console.log('[DB] Base de datos inicializada con configuración por defecto.');
@@ -1175,6 +1217,34 @@ const logs = {
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
+//  CATEGORÍAS
+// ══════════════════════════════════════════════════════════════════════════════
+const categorias = {
+    listar: () =>
+        db.prepare(`SELECT * FROM categorias ORDER BY orden ASC, nombre ASC`).all(),
+
+    crear: ({ nombre, icono = '📦' }) => {
+        const { maxOrden } = db.prepare(`SELECT COALESCE(MAX(orden), -1) AS maxOrden FROM categorias`).get();
+        return db.prepare(
+            `INSERT INTO categorias (nombre, icono, orden) VALUES (@nombre, @icono, @orden)`
+        ).run({ nombre: nombre.trim(), icono, orden: maxOrden + 1 });
+    },
+
+    actualizar: ({ id_categoria, nombre, icono, activo }) =>
+        db.prepare(
+            `UPDATE categorias SET nombre = @nombre, icono = @icono, activo = @activo WHERE id_categoria = @id_categoria`
+        ).run({ id_categoria, nombre: nombre.trim(), icono, activo }),
+
+    eliminar: (id_categoria) => {
+        const enUso = db.prepare(
+            `SELECT COUNT(*) AS c FROM productos WHERE categoria = (SELECT nombre FROM categorias WHERE id_categoria = ?)`
+        ).get(id_categoria);
+        if (enUso.c > 0) throw new Error(`No se puede eliminar: ${enUso.c} producto(s) usan esta categoría`);
+        return db.prepare(`DELETE FROM categorias WHERE id_categoria = ?`).run(id_categoria);
+    },
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
 //  EXPORTAR
 // ══════════════════════════════════════════════════════════════════════════════
-module.exports = { db, productos, clientes, ventas, compras, movimientos, config, caja, usuarios, logs };
+module.exports = { db, productos, clientes, ventas, compras, movimientos, config, caja, usuarios, logs, categorias };
