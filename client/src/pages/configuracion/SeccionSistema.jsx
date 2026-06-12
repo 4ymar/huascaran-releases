@@ -50,7 +50,7 @@ export default function SeccionSistema() {
         }
         setUpdaterStatus('checking');
         try {
-            const resp = await window.electronAPI.updater.check();
+            const resp = await window.electronAPI.updater.checkForced();
             if (!resp.ok) {
                 setUpdaterStatus('error');
                 setUpdaterError(resp.error || 'Error al buscar actualizaciones');

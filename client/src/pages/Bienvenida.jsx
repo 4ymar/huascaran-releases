@@ -18,6 +18,11 @@ const useStars = (count = 12) =>
     );
 
 export default function Bienvenida({ onEntrar }) {
+    const [updateStatus, setUpdateStatus] = useState(null);
+    const [updateInfo, setUpdateInfo]     = useState(null);
+    const [updateOcultado, setUpdateOcultado] = useState(
+        () => sessionStorage.getItem('update_dismissed') === '1'
+    );
     const [loading, setLoading] = useState(false);
     const [dbStatus, setDbStatus] = useState(
         window.electronAPI?.isElectron ? 'ok' : 'connecting'
@@ -46,14 +51,26 @@ export default function Bienvenida({ onEntrar }) {
     }, [loading, dbStatus, onEntrar]);
 
     useEffect(() => {
-        // En Electron el servidor ya está activo al montar; solo buscamos server-info.
-        // En dev (navegador) sí verificamos health.
         if (!window.electronAPI?.isElectron) checkHealth();
 
         fetch('/api/server-info')
             .then(r => r.json())
             .then(data => setServerInfo(data))
             .catch(() => setServerInfo(null));
+
+        // Escuchar eventos del updater (check ya disparado desde main.js)
+        if (!window.electronAPI?.updater) return;
+        const unsub = window.electronAPI.updater.onStatus((status) => {
+            if (status.state === 'available') {
+                setUpdateStatus('available');
+                setUpdateInfo(status.info);
+            } else if (status.state === 'downloading') {
+                setUpdateStatus('downloading');
+            } else if (status.state === 'downloaded') {
+                setUpdateStatus('downloaded');
+            }
+        });
+        return () => unsub();
     }, [checkHealth]);
 
     // Guardia: si la BD falla mientras loading está activo, resetearlo
@@ -210,6 +227,88 @@ export default function Bienvenida({ onEntrar }) {
                     <span className={styles.networkUrl}>{serverInfo.url}</span>
                 </div>
             )}
+
+{/* ── Banner de actualización — flotante izquierdo central ── */}
+{window.electronAPI?.isElectron && updateStatus && !updateOcultado && (
+    <div style={{
+        position: 'absolute',
+        left: 24,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        zIndex: 50,
+        width: 280,
+        background: 'rgba(10, 18, 35, 0.92)',
+        border: '1px solid rgba(115, 93, 255, 0.5)',
+        borderRadius: 14,
+        padding: '18px 20px',
+        boxShadow: '0 8px 32px rgba(115,93,255,0.25)',
+        backdropFilter: 'blur(10px)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 12,
+    }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 22 }}>🚀</span>
+            <div>
+                <p style={{ margin: 0, color: '#fff', fontWeight: 700, fontSize: 13, lineHeight: 1.3 }}>
+                    {updateStatus === 'available'   && `Nueva versión v${updateInfo?.version || ''} disponible`}
+                    {updateStatus === 'downloading' && 'Descargando actualización...'}
+                    {updateStatus === 'downloaded'  && '¡Listo para instalar!'}
+                </p>
+                <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.55)', fontSize: 11 }}>
+                    {updateStatus === 'available'   && 'Actualiza con un solo clic'}
+                    {updateStatus === 'downloading' && 'Espera unos momentos'}
+                    {updateStatus === 'downloaded'  && 'Se reiniciará la aplicación'}
+                </p>
+            </div>
+        </div>
+
+        {updateStatus === 'downloading' && (
+            <div style={{ width: '100%', height: 5, background: 'rgba(255,255,255,0.15)', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ width: '60%', height: '100%', background: '#735DFF', borderRadius: 3, animation: 'pulse 1.5s ease-in-out infinite' }} />
+            </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 8 }}>
+            {updateStatus === 'available' && (
+                <>
+                    <button
+                        onClick={() => window.electronAPI.updater.download()}
+                        style={{
+                            flex: 1, padding: '8px 0', borderRadius: 8, border: 'none',
+                            background: '#735DFF', color: '#fff', fontWeight: 700,
+                            fontSize: 12, cursor: 'pointer',
+                        }}
+                    >
+                        Actualizar ahora
+                    </button>
+                    <button
+                        onClick={() => { setUpdateOcultado(true); sessionStorage.setItem('update_dismissed', '1'); }}
+                        style={{
+                            padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)',
+                            background: 'transparent', color: 'rgba(255,255,255,0.6)',
+                            fontSize: 12, cursor: 'pointer',
+                        }}
+                    >
+                        Luego
+                    </button>
+                </>
+            )}
+            {updateStatus === 'downloaded' && (
+                <button
+                    onClick={() => window.electronAPI.updater.install()}
+                    style={{
+                        flex: 1, padding: '8px 0', borderRadius: 8, border: 'none',
+                        background: '#10B981', color: '#fff', fontWeight: 700,
+                        fontSize: 12, cursor: 'pointer',
+                    }}
+                >
+                    Instalar y reiniciar
+                </button>
+            )}
+        </div>
+    </div>
+)}
 
             {/* ── Contenido principal ── */}
             <div className={styles.content}>

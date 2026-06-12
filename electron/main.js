@@ -123,6 +123,30 @@ ipcMain.handle('select-image', async (_event) => {
     }
 });
 
+// ── CONTROL DE VERIFICACIÓN SEMANAL ──────────────────────────
+const updateCheckFile = path.join(app.getPath('userData'), 'last-update-check.json');
+
+function getLastCheckDate() {
+    try {
+        if (!fs.existsSync(updateCheckFile)) return null;
+        const data = JSON.parse(fs.readFileSync(updateCheckFile, 'utf-8'));
+        return data.lastCheck ? new Date(data.lastCheck) : null;
+    } catch (_) { return null; }
+}
+
+function saveLastCheckDate() {
+    try {
+        fs.writeFileSync(updateCheckFile, JSON.stringify({ lastCheck: new Date().toISOString() }), 'utf-8');
+    } catch (err) { log('Error guardando fecha de check: ' + err.message); }
+}
+
+function debeVerificarSemana() {
+    const last = getLastCheckDate();
+    if (!last) return true;
+    const diasDesdeUltimo = (Date.now() - last.getTime()) / (1000 * 60 * 60 * 24);
+    return diasDesdeUltimo >= 7;
+}
+
 // ── CONFIGURACIÓN DE ACTUALIZACIONES ─────────────────────────
 autoUpdater.autoDownload = false;
 autoUpdater.logger = {
@@ -170,11 +194,24 @@ autoUpdater.on('update-downloaded', (info) => {
 
 // ── IPC HANDLERS PARA ACTUALIZACIONES Y SOPORTE ──────────────
 ipcMain.handle('updater:check', async () => {
+    // Check normal (respeta la restricción semanal — usado por Bienvenida al escuchar)
     try {
         const result = await autoUpdater.checkForUpdates();
         return { ok: true, result };
     } catch (err) {
         log('Error checking updates: ' + err.message);
+        return { ok: false, error: err.message };
+    }
+});
+
+ipcMain.handle('updater:check-forced', async () => {
+    // Check forzado desde Configuración — ignora la semana, guarda nueva fecha
+    try {
+        saveLastCheckDate();
+        const result = await autoUpdater.checkForUpdates();
+        return { ok: true, result };
+    } catch (err) {
+        log('Error checking updates (forced): ' + err.message);
         return { ok: false, error: err.message };
     }
 });
@@ -235,7 +272,7 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:3020');
 
     // Temporal para diagnóstico — quitar en versión final
-    mainWindow.webContents.openDevTools();
+    //mainWindow.webContents.openDevTools();
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.maximize();
@@ -367,12 +404,13 @@ app.whenReady().then(() => {
     esperarServidor();
 
     // Verificar actualizaciones solo en producción
-    if (app.isPackaged) {
+    if (app.isPackaged && debeVerificarSemana()) {
         setTimeout(() => {
+            saveLastCheckDate();
             autoUpdater.checkForUpdates().catch(err => {
                 log('Error al verificar actualizaciones: ' + err.message);
             });
-        }, 8000); // esperar 8s a que la app esté lista
+        }, 8000);
     }
 
     app.on('activate', () => {

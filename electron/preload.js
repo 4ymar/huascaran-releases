@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     isElectron:   true,
     updater: {
         check: () => ipcRenderer.invoke('updater:check'),
+        checkForced:  () => ipcRenderer.invoke('updater:check-forced'),
         download: () => ipcRenderer.invoke('updater:download'),
         install: () => ipcRenderer.invoke('updater:install'),
         onStatus: (callback) => {
@@ -19,4 +20,4 @@ contextBridge.exposeInMainWorld('electronAPI', {
             return () => ipcRenderer.removeListener('updater:status', subscription);
         }
     }
-});
+}); 

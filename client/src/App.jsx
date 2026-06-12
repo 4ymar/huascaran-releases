@@ -80,11 +80,6 @@ function UpdateBanner() {
             }
         });
 
-        // Trigger automatic check
-        window.electronAPI.updater.check().catch((err) => {
-            console.error('Failed to check for updates:', err);
-        });
-
         return () => {
             unsubscribe();
         };
