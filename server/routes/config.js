@@ -32,6 +32,7 @@ function configPublica() {
         cpe_formato_pdf: cfg.cpe_formato_pdf || 'A4',
         cpe_envio_email_cliente: cfg.cpe_envio_email_cliente || '1',
         almacen_principal_id: cfg.almacen_principal_id || 'alm-principal',
+        ticket_logo: cfg.ticket_logo || '',
     };
 }
 

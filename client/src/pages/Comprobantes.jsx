@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { getVentas, getVenta, anularVenta, getCreditos, guardarArchivoLocal, emitirCPE, getPublicConfig, corregirClienteCPE  } from '../services/api';
+import { getVentas, getVenta, anularVenta, getCreditos, guardarArchivoLocal, emitirCPE, corregirClienteCPE, getConfig  } from '../services/api';
 import { formatCurrency, formatDateTime, hoyLocalNegocio, fechaNegocio, condicionPago, medioPagoLabel } from '../utils/helpers';
 import { useToast } from '../components/Toast';
-import { FileText, Eye, Search, X, Ban, Printer } from 'lucide-react';
+import { FileText, Eye, Search, X, Ban, Printer, MessageCircle } from 'lucide-react';
 import { generateComprobantePDF } from '../utils/generateComprobantePDF';
 
 
@@ -45,6 +45,9 @@ export default function Comprobantes() {
         nombre_razon_social: '',
     });
     const [sunatModo, setSunatModo] = useState('demo');
+    const [showWhatsapp, setShowWhatsapp] = useState(null); // venta seleccionada
+    const [telefonoInput, setTelefonoInput] = useState('');
+    const [publicConfig, setPublicConfig] = useState({});
 
     const handleExportExcel = async () => {
         if (!exportDesde || !exportHasta) { toast('Selecciona el rango de fechas', 'warning'); return; }
@@ -217,9 +220,10 @@ export default function Comprobantes() {
 
     useEffect(() => {
         getVentas().then(setVentas).finally(() => setLoading(false));
-        getPublicConfig().then(cfg => {
-        setSunatActivo(cfg?.sunat_activo === '1');
-        setSunatModo(cfg?.sunat_modo || 'demo');
+        getConfig().then(cfg => {
+            setSunatActivo(cfg?.sunat_activo === '1');
+            setSunatModo(cfg?.sunat_modo || 'demo');
+            setPublicConfig(cfg || {});
         });
     }, []);
 
@@ -262,7 +266,36 @@ export default function Comprobantes() {
     // ── Columnas totales para colSpan del mensaje vacío ───────
     const colSpanTotal = 6 + (sunatActivo ? 1 : 0);
 
+    // ── WhatsApp ───────────────────────────────────────────────
+    const handleEnviarWhatsapp = (venta, telefonoOverride) => {
+        const telefono = telefonoOverride || venta.cliente?.telefono || '';
+        const telefonoLimpio = telefono.replace(/\D/g, '');
+        if (!telefonoLimpio || telefonoLimpio.length < 9) {
+            setShowWhatsapp(venta);
+            setTelefonoInput('');
+            return;
+        }
+        const numero = `51${telefonoLimpio.slice(-9)}`;
+        const nombreNegocio = publicConfig?.empresa_nombre_corto || publicConfig?.empresa_nombre || 'la tienda';
+        const nombreCliente = venta.cliente?.nombre_razon_social || 'cliente';
+        const offsetMs = -5 * 60 * 60 * 1000;
+        const fechaLocal = new Date(new Date(venta.fecha_hora).getTime() + offsetMs);
+        const fecha = fechaLocal.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const comprobante = venta.numero_comprobante || venta.numero_venta;
+
+        let mensaje = `Estimado/a ${nombreCliente},\n\nLe enviamos su comprobante de ${nombreNegocio}:\n\n🧾 ${comprobante}\n📅 ${fecha}\n💰 Total: S/ ${Number(venta.total).toFixed(2)}`;
+        if (venta.cpe_enlace_pdf) {
+            mensaje += `\n\n📄 Ver comprobante electrónico:\n${venta.cpe_enlace_pdf}`;
+        }
+        mensaje += `\n\nGracias por su preferencia 🙏`;
+
+        const url = `https://wa.me/${numero}?text=${encodeURIComponent(mensaje)}`;
+        window.electronAPI.openExternal(url);
+        setShowWhatsapp(null);
+    };
+
     return (
+
         <div className="page-enter">
             <div className="page-header">
                 <div>
@@ -478,6 +511,19 @@ export default function Comprobantes() {
                                             </button>
                                             {v.estado === 'ACTIVA' && (
                                                 <button
+                                                    className="btn btn-secondary btn-sm"
+                                                    title="Enviar por WhatsApp"
+                                                    style={{ color: '#25D366' }}
+                                                    onClick={async () => {
+                                                        const data = await getVenta(v.id_venta);
+                                                        handleEnviarWhatsapp({ ...v, cliente: data.cliente, cpe_enlace_pdf: data.cpe_enlace_pdf });
+                                                    }}
+                                                >
+                                                    <MessageCircle size={14} />
+                                                </button>
+                                            )}
+                                            {v.estado === 'ACTIVA' && (
+                                                <button
                                                     className="btn btn-danger btn-sm"
                                                     onClick={() => setShowAnular(v)}
                                                     title="Anular"
@@ -589,10 +635,17 @@ export default function Comprobantes() {
                         )}
 
                         <div className="flex justify-end gap-3 mt-4">
+                            <button
+                                className="btn btn-secondary"
+                                style={{ color: '#25D366', borderColor: '#25D366' }}
+                                onClick={() => handleEnviarWhatsapp(showDetalle)}
+                            >
+                                <MessageCircle size={16} /> WhatsApp
+                            </button>
                             <button className="btn btn-secondary" onClick={async () => {
                                 try {
                                     const { generateTicketPDF } = await import('../utils/generateTicketPDF');
-                                    await generateTicketPDF(showDetalle);
+                                    await generateTicketPDF(showDetalle, publicConfig);
                                 } catch (err) {
                                     toast(err?.message || 'Error al generar el ticket', 'error');
                                 }
@@ -794,6 +847,47 @@ export default function Comprobantes() {
                     </div>
                 </div>
             )}
+
+            {/* ── Modal WhatsApp ──────────────────────────────────── */}
+            {showWhatsapp && (
+                <div className="modal-overlay" onClick={() => setShowWhatsapp(null)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 380 }}>
+                        <div className="modal-header">
+                            <h2 style={{ color: '#25D366' }}>💬 Enviar por WhatsApp</h2>
+                            <button className="btn btn-secondary btn-sm" onClick={() => setShowWhatsapp(null)}><X size={18} /></button>
+                        </div>
+                        <p className="text-sm text-slate-500 mb-4">
+                            El cliente <strong>{showWhatsapp.cliente?.nombre_razon_social || 'Consumidor Final'}</strong> no tiene teléfono registrado. Ingresa el número para continuar.
+                        </p>
+                        <div className="mb-4">
+                            <label className="form-label">Número de celular (9 dígitos)</label>
+                            <input
+                                className="form-input"
+                                value={telefonoInput}
+                                onChange={e => setTelefonoInput(e.target.value.replace(/\D/g, '').slice(0, 9))}
+                                placeholder="Ej: 958624581"
+                                inputMode="numeric"
+                                autoFocus
+                            />
+                            {telefonoInput.length > 0 && telefonoInput.length < 9 && (
+                                <p className="text-xs text-amber-600 mt-1">Debe tener 9 dígitos</p>
+                            )}
+                        </div>
+                        <div className="flex justify-end gap-3">
+                            <button className="btn btn-secondary" onClick={() => setShowWhatsapp(null)}>Cancelar</button>
+                            <button
+                                className="btn btn-primary"
+                                style={{ background: '#25D366', borderColor: '#25D366' }}
+                                disabled={telefonoInput.length !== 9}
+                                onClick={() => handleEnviarWhatsapp(showWhatsapp, telefonoInput)}
+                            >
+                                <MessageCircle size={15} /> Enviar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 }

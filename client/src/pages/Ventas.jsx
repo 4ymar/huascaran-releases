@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { getProductos, createVenta, getVenta, getClientes, createCliente, guardarArchivoLocal, getPublicConfig, getProductoPorBarcode, emitirCPE } from '../services/api';
+import { getProductos, createVenta, getVenta, getClientes, createCliente, guardarArchivoLocal, getConfig, getProductoPorBarcode, emitirCPE } from '../services/api';
 import { formatCurrency, calcularIGV, condicionPago, medioPagoLabel } from '../utils/helpers';
 import { useToast } from '../components/Toast';
 import { Search, Plus, Minus, Trash2, ShoppingCart, Banknote, X, FileText, ScanBarcode, CheckCircle2, LayoutGrid, List, AlertTriangle } from 'lucide-react';
@@ -85,7 +85,7 @@ export default function Ventas() {
     useEffect(() => {
         refreshProductos();
         getClientes({ estado: 'true' }).then(setClientes);
-        getPublicConfig().then(cfg => {
+        getConfig().then(cfg => {
             setConfigApp(cfg);
             setSunatActivo(cfg?.sunat_activo === '1');
         });
@@ -286,7 +286,7 @@ export default function Ventas() {
                             style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 7, border: '1.5px solid rgba(16,185,129,0.3)', background: 'white', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#10B981' }}>
                             <FileText size={12} /> A4
                         </button>
-                        <button onClick={async () => { const v = await getVenta(lastVenta.id_venta); await generateTicketPDF(v); }}
+                        <button onClick={async () => { const v = await getVenta(lastVenta.id_venta); await generateTicketPDF(v, configApp); }}
                             style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 7, border: '1.5px solid rgba(16,185,129,0.3)', background: 'white', cursor: 'pointer', fontSize: 11, fontWeight: 600, color: '#10B981' }}>
                             <FileText size={12} /> Ticket
                         </button>
@@ -953,7 +953,10 @@ export default function Ventas() {
                             </button>
                             <button className="btn btn-primary" onClick={async () => {
                                 setShowPrintModal(false);
-                                try { await generateTicketPDF(ventaParaImprimir); } catch (e) { toast('Error al generar ticket', 'error'); }
+                                try { await generateTicketPDF(ventaParaImprimir, configApp); } catch (e) { 
+                                        console.error('Error ticket:', e?.message, e?.stack);
+                                        alert('Error: ' + e?.message); 
+                                    }
                             }}>
                                 <FileText size={15} /> Imprimir Ticket térmico
                             </button>

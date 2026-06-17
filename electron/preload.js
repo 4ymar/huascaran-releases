@@ -1,12 +1,13 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
-    openPDF:      (base64Data) => ipcRenderer.invoke('open-pdf', base64Data),
+    openPDF: (data) => ipcRenderer.invoke('open-pdf', data),
     openExternal: (url)        => ipcRenderer.invoke('open-external', url),
     saveCSV: (data) => ipcRenderer.invoke('save-csv', data),
     saveExcel: (data) => ipcRenderer.invoke('save-excel', data),
     savePDFDialog:(data) => ipcRenderer.invoke('save-pdf-dialog', data),
     selectImage:  ()     => ipcRenderer.invoke('select-image'),
+    printTicket:  (data) => ipcRenderer.invoke('print-ticket', data),
     saveSupportZip: (data) => ipcRenderer.invoke('save-support-zip', data),
     isElectron:   true,
     updater: {

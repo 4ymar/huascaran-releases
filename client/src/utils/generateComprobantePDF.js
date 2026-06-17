@@ -50,17 +50,30 @@ export async function generateComprobantePDF(venta) {
     // ── HEADER ───────────────────────────────────────────────
     doc.setDrawColor(...AZUL); doc.setLineWidth(0.5);
     doc.rect(10, 10, 118, 28);
+
+    const logoEmpresa = config.ticket_logo || null;
+    const textoX = logoEmpresa ? 40 : 14; // desplaza texto si hay logo
+
+    if (logoEmpresa && logoEmpresa.startsWith('data:image')) {
+        try {
+            const logoBase64 = logoEmpresa.split(',')[1];
+            doc.addImage(logoBase64, 'PNG', 12, 14, 22, 22);
+        } catch (e) {
+            console.error('Error al insertar logo:', e);
+        }
+    }
+
     doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(...AZUL);
-    doc.text(empresa.toUpperCase(), 14, 18);
+    doc.text(empresa.toUpperCase(), textoX, 18);
     doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(...GRIS_TEXTO);
-    doc.text(`RUC: ${ruc}`, 14, 24);
-    doc.text(direccion, 14, 29);
-    if (telefono) doc.text(`Telf: ${telefono}`, 14, 34);
+    doc.text(`RUC: ${ruc}`, textoX, 24);
+    doc.text(direccion, textoX, 29);
+    if (telefono) doc.text(`Telf: ${telefono}`, textoX, 34);
 
     doc.setDrawColor(...AZUL); doc.setLineWidth(0.5);
     doc.rect(132, 10, 68, 28);
     doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(...AZUL);
-    doc.text(isBoleta ? 'BOLETA DE VENTA' : 'FACTURA DE VENTA', 166, 18, { align: 'center' });
+    doc.text(isBoleta ? 'BOLETA DE VENTA ELECTRONICA' : 'FACTURA DE VENTA ELECTRONICA', 166, 18, { align: 'center' });
     doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(...GRIS_TEXTO);
     doc.text(`RUC: ${ruc}`, 166, 23, { align: 'center' });
     doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(...AZUL);
@@ -257,7 +270,7 @@ export async function generateComprobantePDF(venta) {
         doc.text('Consulte: ww1.sunat.gob.pe/ol-ti-itconsultaunificada', 14, y + 16);
     } else {
         doc.text(`Representacion impresa de la ${isBoleta ? 'Boleta' : 'Factura'} de Venta Electronica.`, 14, y + 6);
-        doc.text('Este documento no tiene validez tributaria oficial ante SUNAT.', 14, y + 11);
+        doc.text('Este documento es una representación gráfica del comprobante electrónico emitido.', 14, y + 11);
         doc.setTextColor(...AZUL);
         doc.text('Consulte su validez en www.sunat.gob.pe', 14, y + 16);
     }
@@ -282,6 +295,7 @@ export async function generateComprobantePDF(venta) {
     } catch (e) { console.error(e); }
 
     const base64 = pdfBase64.split(',')[1];
-    if (window.electronAPI) await window.electronAPI.openPDF(base64);
+    const numDoc = (venta.numero_comprobante || venta.numero_venta || 'doc').replace(/\//g, '-');
+    if (window.electronAPI?.openPDF) await window.electronAPI.openPDF({ base64, filename: `a4_${numDoc}.pdf` });
     else window.open(doc.output('bloburl'), '_blank');
 }

@@ -37,12 +37,12 @@ ipcMain.handle('open-external', async (_event, url) => {
 
 // ── Abrir PDF con visor nativo del sistema ─────────────────
 const os = require('os');
-ipcMain.handle('open-pdf', async (_event, base64Data) => {
+ipcMain.handle('open-pdf', async (_event, { base64, anchoMM, filename }) => {
     try {
-        const tmpPath = path.join(os.tmpdir(), `comprobante_${Date.now()}.pdf`);
-        const buffer = Buffer.from(base64Data, 'base64');
-        fs.writeFileSync(tmpPath, buffer);
-        await shell.openPath(tmpPath);
+        const tmpPdf = path.join(os.tmpdir(), filename || `comprobante_${Date.now()}.pdf`);
+        fs.writeFileSync(tmpPdf, Buffer.from(base64, 'base64'));
+        fs.writeFileSync(path.join(os.tmpdir(), 'ticket_jspdf.pdf'), Buffer.from(base64, 'base64'));
+        await shell.openPath(tmpPdf);
         return { ok: true };
     } catch (err) {
         log('Error abriendo PDF: ' + err.message);
@@ -123,6 +123,68 @@ ipcMain.handle('select-image', async (_event) => {
     }
 });
 
+// ── Imprimir ticket térmico o generar PDF para vista previa ─────────────
+ipcMain.handle('print-ticket', async (_event, { html, silent, anchoMM }) => {
+    let ticketWin = null;
+    try {
+        ticketWin = new BrowserWindow({
+            width: 400,
+            height: 800,
+            show: false,
+            webPreferences: {
+                nodeIntegration: false,
+                contextIsolation: true,
+                webSecurity: false,
+            },
+        });
+
+        // Cargar HTML directo como data URL — sin archivo temporal
+        const tmpHtml = path.join(os.tmpdir(), `ticket_${Date.now()}.html`);
+        fs.writeFileSync(tmpHtml, html, 'utf-8');
+        await ticketWin.loadFile(tmpHtml);
+
+        // Esperar renderizado completo
+        await new Promise(resolve => setTimeout(resolve, 1200));
+
+        if (silent) {
+            await new Promise((resolve, reject) => {
+                ticketWin.webContents.print(
+                    { silent: true, printBackground: true, deviceName: '' },
+                    (success, reason) => success ? resolve() : reject(new Error(reason))
+                );
+            });
+            return { ok: true, mode: 'print' };
+        } else {
+            const scrollHeight = await ticketWin.webContents.executeJavaScript('document.body.scrollHeight');
+            const anchoUm = (parseInt(anchoMM) || 80) * 1000;
+            const altoUm  = Math.round(scrollHeight * 25400 / 96);
+            log(`scrollHeight: ${scrollHeight}px → alto: ${altoUm}um, ancho: ${anchoUm}um`);
+            const bodyHeight = await ticketWin.webContents.executeJavaScript('document.body.getBoundingClientRect().height');
+            log(`bodyHeight: ${bodyHeight}px`);
+
+            const pdfBuffer = await ticketWin.webContents.printToPDF({
+                printBackground: true,
+                marginsType: 1,
+                pageSize: { width: Math.round(anchoUm), height: Math.round(altoUm) },
+            });
+            log('pdfBuffer size: ' + pdfBuffer.length + ' bytes');
+            fs.writeFileSync(path.join(require('os').homedir(), 'Desktop', 'ticket_debug.pdf'), pdfBuffer);
+            try { fs.unlinkSync(tmpHtml); } catch (_) {}
+            return {
+                ok:     true,
+                mode:   'preview',
+                base64: pdfBuffer.toString('base64'),
+            };
+        }
+    } catch (err) {
+        log('Error generando ticket: ' + err.message);
+        return { ok: false, error: err.message };
+    } finally {
+        setTimeout(() => {
+            if (ticketWin && !ticketWin.isDestroyed()) ticketWin.destroy();
+        }, 3000);
+    }
+});
 // ── CONTROL DE VERIFICACIÓN SEMANAL ──────────────────────────
 const updateCheckFile = path.join(app.getPath('userData'), 'last-update-check.json');
 
@@ -264,6 +326,7 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
+            webSecurity: false,
             preload: path.join(__dirname, 'preload.js')
         },
         icon: path.join(__dirname, 'icon.ico')
@@ -272,7 +335,7 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:3020');
 
     // Temporal para diagnóstico — quitar en versión final
-    //mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.maximize();
@@ -303,6 +366,9 @@ app.whenReady().then(() => {
     // Elimina la advertencia "Insecure Content-Security-Policy" de Electron.
     // Se aplica ANTES de crear la ventana para que cubra todas las peticiones.
     session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+        if (details.url.startsWith('file://')) {
+            return callback({ responseHeaders: details.responseHeaders });
+        }
         callback({
             responseHeaders: {
                 ...details.responseHeaders,

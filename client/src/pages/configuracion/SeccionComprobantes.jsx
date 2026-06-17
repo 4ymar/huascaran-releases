@@ -1,4 +1,4 @@
-import { FileText, CheckCircle, Info } from 'lucide-react';
+import { FileText, CheckCircle, Info, ExternalLink } from 'lucide-react';
 
 export default function SeccionComprobantes({
     config,
@@ -95,6 +95,21 @@ export default function SeccionComprobantes({
                     Integración con NubeFact para emitir boletas y facturas electrónicas válidas ante SUNAT.
                     Requiere cuenta activa en <strong>nubefact.com</strong>.
                 </p>
+                <div className="mb-5">
+                    
+                        <a href="https://www.nubefact.com/login"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn btn-secondary"
+                        style={{ fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                    >
+                        <ExternalLink size={14} />
+                        Ir al panel de NubeFact
+                    </a>
+                    <p className="text-xs text-slate-400 mt-2">
+                        Configura tu logo, colores y datos de empresa directamente en NubeFact.
+                    </p>
+                </div>
 
                 {/* Toggle activar */}
                 <div className="flex items-center gap-3 mb-5">
@@ -206,7 +221,7 @@ export default function SeccionComprobantes({
                     </div>
                     <label className="form-label">Formato del PDF electrónico (NubeFact)</label>
                     <select
-                        className="form-input"
+                        className="form-input"Representación impresa
                         value={config.cpe_formato_pdf || 'A4'}
                         onChange={e => handleChange('cpe_formato_pdf', e.target.value)}
                     >
