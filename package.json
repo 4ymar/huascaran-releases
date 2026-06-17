@@ -1,6 +1,7 @@
 {
   "name": "huascaran",
   "version": "1.2.1",
+  "author": "GiraDevs",
   "description": "Sistema de Inventario y POS - HUASCARAN",
   "main": "electron/main.js",
   "scripts": {

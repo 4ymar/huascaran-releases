@@ -4,8 +4,10 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  build: { rollupOptions: { external: ['html2canvas'] } } ,
   optimizeDeps: {
-    include: ['xlsx']
+    include: ['xlsx'],
+    exclude: ['html2canvas']
   },
   server: {
     port: 5200,

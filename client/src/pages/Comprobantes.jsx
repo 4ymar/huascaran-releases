@@ -4,7 +4,7 @@ import { formatCurrency, formatDateTime, hoyLocalNegocio, fechaNegocio, condicio
 import { useToast } from '../components/Toast';
 import { FileText, Eye, Search, X, Ban, Printer, MessageCircle } from 'lucide-react';
 import { generateComprobantePDF } from '../utils/generateComprobantePDF';
-
+import { generateTicketPDF } from '../utils/generateTicketPDF';
 
 // ── Helper: acortar nombre de cliente ─────────────────────
 function nombreCorto(nombre, maxLen = 22) {
@@ -642,9 +642,9 @@ export default function Comprobantes() {
                             >
                                 <MessageCircle size={16} /> WhatsApp
                             </button>
-                            <button className="btn btn-secondary" onClick={async () => {
+                            <button className="btn btn-secondary" 
+                            onClick={async () => {
                                 try {
-                                    const { generateTicketPDF } = await import('../utils/generateTicketPDF');
                                     await generateTicketPDF(showDetalle, publicConfig);
                                 } catch (err) {
                                     toast(err?.message || 'Error al generar el ticket', 'error');

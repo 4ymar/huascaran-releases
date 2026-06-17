@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Save, Settings } from 'lucide-react';
 import { useToast } from '../components/Toast';
-import { getConfig, updateConfig, updateSunatToken, getBackups, crearBackup } from '../services/api';
+import { getConfig, updateConfig, updateSunatToken, getBackups, crearBackup, probarConfiguracionCPE } from '../services/api';
 
 import ConfigSidebar      from './configuracion/ConfigSidebar';
 import SeccionEmpresa     from './configuracion/SeccionEmpresa';
@@ -84,7 +84,6 @@ export default function Configuracion() {
         }
         setProbandoCpe(true);
         try {
-            const { probarConfiguracionCPE } = await import('../services/api');
             await probarConfiguracionCPE();
             toast('Conexion con proveedor CPE disponible', 'success');
         } catch (err) {

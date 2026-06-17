@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Lock, User, LogIn, Eye, EyeOff, ShoppingCart, Package, BarChart2, MessageCircle } from 'lucide-react';
 import logo from '../assets/logo_sin_fondo.png';
-import bgHuascaran from '../assets/huascaran.png';
+import bgHuascaran from '../assets/huascaran.webp';
 import { login, getMe, getSetupEstado, crearAdminInicial } from '../services/api';
 import { useToast } from '../components/Toast';
 import s from './Login.module.css';
