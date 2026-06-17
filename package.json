@@ -7,13 +7,12 @@
   "scripts": {
     "dev:backend": "cd server && node index.js",
     "dev:frontend": "cd client && npm run dev",
-    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
-    "dev:full": "npm run rebuild:dev && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev": "npm run rebuild:dev && concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "rebuild:dev": "cd server && npm rebuild better-sqlite3",
     "rebuild:native": "npx @electron/rebuild -f -w better-sqlite3 --module-dir server",
     "build:frontend": "cd client && npm run build",
-    "start": "electron .",
-    "compile:backend": "node server/compile_server.js",
+    "start": "npm run rebuild:native && electron .",
+    "compile:backend": "npx electron compile_electron.js",
     "electron:build": "npm run build:frontend && npm run rebuild:native && npm run compile:backend && npx electron-builder --win",
     "release": "npm run build:frontend && npm run rebuild:native && npm run compile:backend && npx electron-builder --win --publish always"
   },
