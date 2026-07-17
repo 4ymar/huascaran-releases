@@ -102,6 +102,7 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/bienvenida-1.png" width="700" alt="Pantalla de bienvenida">
+<p><em>Pantalla de bienvenida al iniciar HUASCARAN POS</em></p>
 
 </details>
 
@@ -110,6 +111,7 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/login-1.png" width="700" alt="Pantalla de inicio de sesión">
+<p><em>Inicio de sesión de usuario</em></p>
 
 </details>
 
@@ -117,8 +119,11 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <summary><strong>Inicio</strong></summary>
 <br>
 
-<img src="docs/screenshots/inicio-1.png" width="700" alt="Pantalla de inicio / Dashboard">
-<img src="docs/screenshots/inicio-2.png" width="700" alt="Pantalla de inicio / Dashboard, vista alterna">
+<img src="docs/screenshots/inicio-1.png" width="700" alt="Dashboard principal">
+<p><em>Panel de control con resumen del negocio: ventas, inventario y alertas</em></p>
+
+<img src="docs/screenshots/inicio-2.png" width="700" alt="Dashboard, vista de últimas ventas">
+<p><em>Últimas ventas y productos más vendidos</em></p>
 
 </details>
 
@@ -127,7 +132,10 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/ventas-1.png" width="700" alt="Registro de venta">
+<p><em>Registro de venta en Punto de Venta</em></p>
+
 <img src="docs/screenshots/ventas-2.png" width="700" alt="Emisión de comprobante en Ventas">
+<p><em>Emisión de comprobante electrónico desde la venta</em></p>
 
 </details>
 
@@ -135,9 +143,14 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <summary><strong>Caja</strong></summary>
 <br>
 
-<img src="docs/screenshots/caja-1.png" width="700" alt="Apertura y control de caja">
-<img src="docs/screenshots/caja-2.png" width="700" alt="Cierre de caja">
-<img src="docs/screenshots/caja-3.png" width="700" alt="Caja, vista historial">
+<img src="docs/screenshots/caja-1.png" width="700" alt="Apertura de caja">
+<p><em>Apertura de caja</em></p>
+
+<img src="docs/screenshots/caja-2.png" width="700" alt="Control de caja">
+<p><em>Control de movimientos de caja</em></p>
+
+<img src="docs/screenshots/caja-3.png" width="700" alt="Cierre de caja">
+<p><em>Cierre de caja</em></p>
 
 </details>
 
@@ -146,6 +159,7 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/creditos-1.png" width="700" alt="Cuentas por cobrar">
+<p><em>Gestión de cuentas por cobrar (créditos/fiado)</em></p>
 
 </details>
 
@@ -154,7 +168,10 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/productos-1.png" width="700" alt="Catálogo de productos">
+<p><em>Catálogo de productos</em></p>
+
 <img src="docs/screenshots/productos-2.png" width="700" alt="Edición de producto">
+<p><em>Registro/edición de producto</em></p>
 
 </details>
 
@@ -163,7 +180,10 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/inventario-1.png" width="700" alt="Control de inventario">
+<p><em>Control de inventario</em></p>
+
 <img src="docs/screenshots/inventario-2.png" width="700" alt="Movimientos de stock">
+<p><em>Movimientos de stock</em></p>
 
 </details>
 
@@ -172,7 +192,10 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/compras-1.png" width="700" alt="Órdenes de compra">
-<img src="docs/screenshots/compras-2.png" width="700" alt="Nueva orden">
+<p><em>Registro de compras a proveedores</em></p>
+
+<img src="docs/screenshots/compras-2.png" width="700" alt="Recepción de mercadería">
+<p><em>Recepción de mercadería</em></p>
 
 </details>
 
@@ -181,7 +204,10 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/clientes-1.png" width="700" alt="Directorio de clientes">
+<p><em>Directorio de clientes</em></p>
+
 <img src="docs/screenshots/clientes-2.png" width="700" alt="Detalle de cliente">
+<p><em>Detalle y edición de cliente</em></p>
 
 </details>
 
@@ -190,7 +216,10 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/reportes-1.png" width="700" alt="Reportes de ventas">
+<p><em>Reportes de ventas</em></p>
+
 <img src="docs/screenshots/reportes-2.png" width="700" alt="Reportes de stock/utilidades">
+<p><em>Reportes de inventario y utilidades</em></p>
 
 </details>
 
@@ -199,7 +228,10 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/comprobantes-1.png" width="700" alt="Listado de comprobantes electrónicos">
+<p><em>Listado de comprobantes electrónicos (CPE)</em></p>
+
 <img src="docs/screenshots/comprobantes-2.png" width="700" alt="Detalle de comprobante SUNAT">
+<p><em>Detalle y estado del comprobante ante SUNAT</em></p>
 
 </details>
 
@@ -208,6 +240,7 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/usuarios-1.png" width="700" alt="Gestión de usuarios">
+<p><em>Gestión de usuarios y roles (Admin/Cajero)</em></p>
 
 </details>
 
@@ -216,6 +249,7 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/auditoria-1.png" width="700" alt="Registro de auditoría">
+<p><em>Registro de auditoría del sistema</em></p>
 
 </details>
 
@@ -224,16 +258,30 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/configuracion-1.png" width="700" alt="Configuración: Empresa">
+<p><em>Datos de la empresa (fiscales y ubicación)</em></p>
+
 <img src="docs/screenshots/configuracion-2.png" width="700" alt="Configuración: Comprobantes">
+<p><em>Series, correlativos y configuración SUNAT</em></p>
+
+<img src="docs/screenshots/configuracion-2.1.png" width="700" alt="Configuración: Comprobantes, vista adicional">
+<p><em>Configuración de comprobantes, vista adicional</em></p>
+
 <img src="docs/screenshots/configuracion-3.png" width="700" alt="Configuración: Ticket térmico">
+<p><em>Configuración de impresora POS y logo del ticket</em></p>
+
 <img src="docs/screenshots/configuracion-4.png" width="700" alt="Configuración: Catálogo">
+<p><em>Categorías de productos</em></p>
+
 <img src="docs/screenshots/configuracion-5.png" width="700" alt="Configuración: Copias de seguridad">
+<p><em>Backups y restauración</em></p>
+
 <img src="docs/screenshots/configuracion-6.png" width="700" alt="Configuración: Sistema">
+<p><em>Actualizaciones y diagnóstico del sistema</em></p>
+
 <img src="docs/screenshots/configuracion-7.png" width="700" alt="Configuración: Zona de peligro">
+<p><em>Restablecer sistema o cargar datos de demo</em></p>
 
 </details>
-
----
 
 ## 📥 Instalación / Installation
 
