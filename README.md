@@ -95,8 +95,6 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 
 ---
 
-## 📸 Capturas de pantalla / Screenshots
-
 ## 📸 Capturas del Sistema
 
 <details>
@@ -138,7 +136,8 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 <br>
 
 <img src="docs/screenshots/caja-1.png" width="700" alt="Apertura y control de caja">
-<img src="docs/screenshots/caja-2.png" width="700" alt="Inicio de caja">
+<img src="docs/screenshots/caja-2.png" width="700" alt="Cierre de caja">
+<img src="docs/screenshots/caja-3.png" width="700" alt="Caja, vista historial">
 
 </details>
 
