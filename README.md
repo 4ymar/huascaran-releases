@@ -97,7 +97,142 @@ HUASCARAN complies with **SUNAT** electronic invoicing requirements through inte
 
 ## 📸 Capturas de pantalla / Screenshots
 
-> 🚧 **Próximamente / Coming soon** — Las capturas del sistema estarán disponibles en la próxima actualización.
+## 📸 Capturas del Sistema
+
+<details>
+<summary><strong>Bienvenida</strong></summary>
+<br>
+
+<img src="docs/screenshots/bienvenida-1.png" width="700" alt="Pantalla de bienvenida">
+
+</details>
+
+<details>
+<summary><strong>Login</strong></summary>
+<br>
+
+<img src="docs/screenshots/login-1.png" width="700" alt="Pantalla de inicio de sesión">
+
+</details>
+
+<details>
+<summary><strong>Inicio</strong></summary>
+<br>
+
+<img src="docs/screenshots/inicio-1.png" width="700" alt="Pantalla de inicio / Dashboard">
+<img src="docs/screenshots/inicio-2.png" width="700" alt="Pantalla de inicio / Dashboard, vista alterna">
+
+</details>
+
+<details>
+<summary><strong>Punto de Venta</strong></summary>
+<br>
+
+<img src="docs/screenshots/ventas-1.png" width="700" alt="Registro de venta">
+<img src="docs/screenshots/ventas-2.png" width="700" alt="Emisión de comprobante en Ventas">
+
+</details>
+
+<details>
+<summary><strong>Caja</strong></summary>
+<br>
+
+<img src="docs/screenshots/caja-1.png" width="700" alt="Apertura y control de caja">
+<img src="docs/screenshots/caja-2.png" width="700" alt="Inicio de caja">
+
+</details>
+
+<details>
+<summary><strong>Créditos</strong></summary>
+<br>
+
+<img src="docs/screenshots/creditos-1.png" width="700" alt="Cuentas por cobrar">
+
+</details>
+
+<details>
+<summary><strong>Productos</strong></summary>
+<br>
+
+<img src="docs/screenshots/productos-1.png" width="700" alt="Catálogo de productos">
+<img src="docs/screenshots/productos-2.png" width="700" alt="Edición de producto">
+
+</details>
+
+<details>
+<summary><strong>Inventario</strong></summary>
+<br>
+
+<img src="docs/screenshots/inventario-1.png" width="700" alt="Control de inventario">
+<img src="docs/screenshots/inventario-2.png" width="700" alt="Movimientos de stock">
+
+</details>
+
+<details>
+<summary><strong>Compras</strong></summary>
+<br>
+
+<img src="docs/screenshots/compras-1.png" width="700" alt="Órdenes de compra">
+<img src="docs/screenshots/compras-2.png" width="700" alt="Nueva orden">
+
+</details>
+
+<details>
+<summary><strong>Clientes</strong></summary>
+<br>
+
+<img src="docs/screenshots/clientes-1.png" width="700" alt="Directorio de clientes">
+<img src="docs/screenshots/clientes-2.png" width="700" alt="Detalle de cliente">
+
+</details>
+
+<details>
+<summary><strong>Reportes</strong></summary>
+<br>
+
+<img src="docs/screenshots/reportes-1.png" width="700" alt="Reportes de ventas">
+<img src="docs/screenshots/reportes-2.png" width="700" alt="Reportes de stock/utilidades">
+
+</details>
+
+<details>
+<summary><strong>Comprobantes</strong></summary>
+<br>
+
+<img src="docs/screenshots/comprobantes-1.png" width="700" alt="Listado de comprobantes electrónicos">
+<img src="docs/screenshots/comprobantes-2.png" width="700" alt="Detalle de comprobante SUNAT">
+
+</details>
+
+<details>
+<summary><strong>Usuarios</strong></summary>
+<br>
+
+<img src="docs/screenshots/usuarios-1.png" width="700" alt="Gestión de usuarios">
+
+</details>
+
+<details>
+<summary><strong>Auditoría</strong></summary>
+<br>
+
+<img src="docs/screenshots/auditoria-1.png" width="700" alt="Registro de auditoría">
+
+</details>
+
+<details>
+<summary><strong>Configuración</strong></summary>
+<br>
+
+<img src="docs/screenshots/configuracion-1.png" width="700" alt="Configuración: Empresa">
+<img src="docs/screenshots/configuracion-2.png" width="700" alt="Configuración: Comprobantes">
+<img src="docs/screenshots/configuracion-3.png" width="700" alt="Configuración: Ticket térmico">
+<img src="docs/screenshots/configuracion-4.png" width="700" alt="Configuración: Catálogo">
+<img src="docs/screenshots/configuracion-5.png" width="700" alt="Configuración: Copias de seguridad">
+<img src="docs/screenshots/configuracion-6.png" width="700" alt="Configuración: Sistema">
+<img src="docs/screenshots/configuracion-7.png" width="700" alt="Configuración: Zona de peligro">
+
+</details>
 
 ---
 
