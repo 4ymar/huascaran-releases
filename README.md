@@ -301,7 +301,7 @@ Download the latest installer from the **[Releases](https://github.com/4ymar/hua
 <div align="center">
 
 **GiraDevs**  
-Desarrollado por / Developed by **Aymar** · Ancash, Perú 🇵🇪
+Desarrollado por / Developed by **Aymar** · Perú 🇵🇪
 
 [![Email](https://img.shields.io/badge/Email-nicegira9@gmail.com-teal?style=flat-square&logo=gmail)](mailto:nicegira9@gmail.com)
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-%2B51%20924%20659%20250-25D366?style=flat-square&logo=whatsapp)](https://wa.me/51924659250)
