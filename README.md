@@ -313,6 +313,6 @@ Desarrollado por / Developed by **Aymar** · Perú 🇵🇪
 
 <div align="center">
 
-*HUASCARAN POS © 2025 GiraDevs · Todos los derechos reservados / All rights reserved*
+*HUASCARAN POS © 2026 GiraDevs · Todos los derechos reservados / All rights reserved*
 
 </div>
