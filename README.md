@@ -5,7 +5,7 @@
 **Sistema de Punto de Venta e Inventario para MYPEs peruanas**  
 *Point of Sale & Inventory Management System for Peruvian SMEs*
 
-![Version](https://img.shields.io/badge/versión-1.2.2-teal?style=flat-square)
+![Version](https://img.shields.io/badge/versión-2.0.0-teal?style=flat-square)
 ![Platform](https://img.shields.io/badge/plataforma-Windows-blue?style=flat-square)
 ![Status](https://img.shields.io/badge/estado-en%20desarrollo%20activo-green?style=flat-square)
 ![Peru](https://img.shields.io/badge/Hecho%20en-Perú%20🇵🇪-red?style=flat-square)
